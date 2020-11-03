@@ -98,6 +98,11 @@ class musrRootOutput  {
 
     void SetSaveDetectorInfo (G4int ID, G4int particleID, G4double ke, G4double edep, G4double x, G4double y, G4double z, G4double time, 
 			      G4double px, G4double py, G4double pz, G4double polx, G4double poly, G4double polz) ;
+    
+    //irene
+    void SetSaveMuFormationScintInfo(G4int ID, G4double edep, G4double time) ;
+    void SetSaveMuFormationBGOInfo(G4int ID, G4double edep, G4double time) ;
+
 
     void SetInitialMuonParameters(G4double x, G4double y, G4double z, G4double px, G4double py, G4double pz, 
 				  G4double xpolaris, G4double ypolaris, G4double zpolaris, G4double particleTime) {
@@ -486,6 +491,15 @@ class musrRootOutput  {
     G4double save_polz[save_nMax];
 
     G4bool boolIsAnySpecialSaveVolumeDefined;
+
+
+    //irene
+    G4double scint_edep;
+    G4double scint_time;
+    G4double scint_n;
+    G4double bgo_edep;
+    G4double bgo_time;
+    G4double bgo_n;
 
     std::map<std::string,int> SensDetectorMapping;
     std::map<std::string,int> ProcessIDMapping;

@@ -234,7 +234,7 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	if (tmpVolumeID!=0) {
 	  G4int particle_id_save=p_definition->GetPDGEncoding();
 	  G4double ke_save=preStepPoint->GetKineticEnergy();
-      G4double edep_save=aStep->GetTotalEnergyDeposit();
+    G4double edep_save=aStep->GetTotalEnergyDeposit();
 	  G4double x_save=preStepPosition.x();
 	  G4double y_save=preStepPosition.y();
 	  G4double z_save=preStepPosition.z();
@@ -245,8 +245,18 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	  G4double polx_save=preStepPoint->GetPolarization().x();
 	  G4double poly_save=preStepPoint->GetPolarization().y();
 	  G4double polz_save=preStepPoint->GetPolarization().z();
+    //irene
+    //scintillators
+    if ((tmpVolumeID >= 903 && tmpVolumeID <= 904)  && edep_save > 0) {
+      myRootOutput->SetSaveMuFormationScintInfo(tmpVolumeID, edep_save, time_save);
+    }
+    //bgo
+    else if (((tmpVolumeID >= 909 && tmpVolumeID <= 911) || (tmpVolumeID >= 918 && tmpVolumeID <= 920)) && edep_save > 0) {
+      myRootOutput->SetSaveMuFormationBGOInfo(tmpVolumeID, edep_save, time_save);
+    }
+    
 	  myRootOutput->SetSaveDetectorInfo(tmpVolumeID,particle_id_save,ke_save,edep_save,x_save,y_save,z_save,time_save,px_save,py_save,pz_save,polx_save,poly_save,polz_save);
-	  //
+    //
           //-----------------------------------------------------------------------------------------
           //  Uncoment for iterative musrSim runs (e.g. when searching for a quadrupole triplet focus using a python script)
 	  // //  myRootOutput->htest7->Fill(sqrt(x_save*x_save+y_save*y_save));
@@ -255,6 +265,8 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	  // myRootOutput->htest8->Fill(y_save);
 	  //-----------------------------------------------------------------------------------------
 	}
+
+  
       
     }
 

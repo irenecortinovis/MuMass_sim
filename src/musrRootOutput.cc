@@ -300,6 +300,12 @@ void musrRootOutput::BeginOfRunAction() {
     rootTree->Branch("save_polx",&save_polx,"save_polx[save_n]/D");
     rootTree->Branch("save_poly",&save_poly,"save_poly[save_n]/D");
     rootTree->Branch("save_polz",&save_polz,"save_polz[save_n]/D");
+    //irene
+    rootTree->Branch("scint_time",&scint_time,"scint_time/D");
+    rootTree->Branch("scint_edep",&scint_edep,"scint_edep/D");
+    rootTree->Branch("bgo_time",&bgo_time,"bgo_time/D");
+    rootTree->Branch("bgo_edep",&bgo_edep,"bgo_edep/D");
+
   }
 
   if (musrParameters::boolG4OpticalPhotons) {
@@ -526,6 +532,13 @@ void musrRootOutput::ClearAllRootVariables() {
   det_n=0;
   save_n=0;
   odet_n=0;
+  //irene
+  scint_edep=0;
+  bgo_edep=0;
+  scint_time=0;
+  bgo_time=0;
+  scint_n=0;
+  bgo_n=0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -597,6 +610,21 @@ void musrRootOutput::SetSaveDetectorInfo (G4int ID, G4int particleID, G4double k
     save_polz[save_n]=polz;
     save_n++;
   }
+}
+
+//irene
+void musrRootOutput::SetSaveMuFormationScintInfo(G4int ID, G4double edep, G4double time)
+{
+  scint_edep += edep/CLHEP::MeV;
+  scint_time = (scint_time*scint_n + time/CLHEP::microsecond)/(scint_n+1);
+  scint_n ++;
+}
+//irene
+void musrRootOutput::SetSaveMuFormationBGOInfo(G4int ID, G4double edep, G4double time)
+{
+  bgo_edep += edep/CLHEP::MeV;
+  bgo_time = (bgo_time*bgo_n + time/CLHEP::microsecond)/(bgo_n+1);
+  bgo_n ++;
 }
 
 void musrRootOutput::SetFieldNomVal(G4int i, G4double value) {

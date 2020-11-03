@@ -75,7 +75,7 @@ G4double SilicaMuProbability::GetProbability(
         //TGraph *gr = new TGraph(14, energy_250k, efficiency_250k);
         //TSpline3 *s = new TSpline3("grs",gr);
         //probability = s->Eval(E/CLHEP::keV) ; 
-        probability = 0.5;
+        probability = 1;
     }
     
     else
