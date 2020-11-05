@@ -305,6 +305,7 @@ void musrRootOutput::BeginOfRunAction() {
     rootTree->Branch("scint_edep",&scint_edep,"scint_edep/D");
     rootTree->Branch("bgo_time",&bgo_time,"bgo_time/D");
     rootTree->Branch("bgo_edep",&bgo_edep,"bgo_edep/D");
+    rootTree->Branch("TDC_times_event", &TDC_times_event, "TDC_times_event[17]/D");
 
   }
 
@@ -539,6 +540,9 @@ void musrRootOutput::ClearAllRootVariables() {
   bgo_time=0;
   scint_n=0;
   bgo_n=0;
+  for(G4int i = 0; i < nVolumes; ++i) {
+    TDC_times_event[i] = 0;
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -625,6 +629,28 @@ void musrRootOutput::SetSaveMuFormationBGOInfo(G4int ID, G4double edep, G4double
   bgo_edep += edep/CLHEP::MeV;
   bgo_time = (bgo_time*bgo_n + time/CLHEP::microsecond)/(bgo_n+1);
   bgo_n ++;
+}
+
+//irene
+void musrRootOutput::SetSaveTriggerInfo(G4int TDC_Volumes[nVolumes], G4double TDC_times[nVolumes])
+{
+  for(G4int i = 0; i <nVolumes; ++i) { 
+     if (TDC_times[i] != 0){
+      //std::cout << "begin rootoutput: " << std::endl;
+      //std::cout << TDC_Volumes[i] << ", " << TDC_times[i] << std::endl;
+    }
+  }
+  //loop over each interesting detector
+  for(G4int i = 0; i < nVolumes; ++i) {
+    //fill each detector with its first time in the event, else leave 0
+    if (TDC_times_event[i] == 0 && TDC_times[i] != 0){
+      TDC_times_event[i] = TDC_times[i]/CLHEP::microsecond;
+      //std::cout << i << ", " << TDC_times_event[i] << std::endl;
+
+    }
+  }
+  //debugging
+  //std::cout << TDC_times_event[0] << ", " << TDC_times_event[1] << std::endl;
 }
 
 void musrRootOutput::SetFieldNomVal(G4int i, G4double value) {

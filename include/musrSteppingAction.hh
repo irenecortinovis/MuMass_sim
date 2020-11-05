@@ -88,6 +88,8 @@ class musrSteppingAction : public G4UserSteppingAction
     G4double BzIntegral1, BzIntegral2, BzIntegral3;
     G4double CoordinateForFieldIntegral[4];
     G4double FieldForFieldIntegral[6];
+
+    // irene
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

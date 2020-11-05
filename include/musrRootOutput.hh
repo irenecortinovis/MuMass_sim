@@ -102,6 +102,8 @@ class musrRootOutput  {
     //irene
     void SetSaveMuFormationScintInfo(G4int ID, G4double edep, G4double time) ;
     void SetSaveMuFormationBGOInfo(G4int ID, G4double edep, G4double time) ;
+    void SetSaveTriggerInfo(G4int TDC_Volumes[17], G4double TDC_times[17]) ;
+
 
 
     void SetInitialMuonParameters(G4double x, G4double y, G4double z, G4double px, G4double py, G4double pz, 
@@ -472,6 +474,9 @@ class musrRootOutput  {
 
   public:
     static const Int_t save_nMax=1000;
+    static const G4int nVolumes = 17;
+    G4int TDC_Volumes[nVolumes] = {902,903,904,906,907,908,909,910,911,915,916,917,918,919,920,1015,1039}; //over defined! also in musrSteppingAction.cc
+
 
   private:
     G4int    save_n;
@@ -500,6 +505,7 @@ class musrRootOutput  {
     G4double bgo_edep;
     G4double bgo_time;
     G4double bgo_n;
+    G4double TDC_times_event[nVolumes] = {0}; //also
 
     std::map<std::string,int> SensDetectorMapping;
     std::map<std::string,int> ProcessIDMapping;

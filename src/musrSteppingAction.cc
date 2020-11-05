@@ -229,32 +229,54 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	isFirstStepInVolume=true;
       }
 
-      //if (isFirstStepInVolume) {
-	G4int tmpVolumeID=saveVolumeMapping[actualVolume];
+  //irene - moved them outside of if firststepinvolume
+  G4int tmpVolumeID=saveVolumeMapping[actualVolume];
+  G4double time_save=preStepPoint->GetGlobalTime();
+  G4double edep_save=aStep->GetTotalEnergyDeposit();
+
+  //irene
+  G4double TDC_times[myRootOutput->nVolumes] = {0};
+  for(G4int i = 0; i < myRootOutput->nVolumes; ++i) { 
+    if (TDC_times[i] != 0){
+    }
+  }
+  for(G4int i = 0; i < myRootOutput->nVolumes; ++i) {
+    if (tmpVolumeID == myRootOutput->TDC_Volumes[i] && edep_save > 0){ //change with some threshold
+      TDC_times[i] = time_save;
+      //std::cout << tmpVolumeID << ", " << TDC_times[i]/CLHEP::microsecond << ", " << edep_save/CLHEP::MeV << std::endl;
+
+    } 
+  }
+  for(G4int i = 0; i < myRootOutput->nVolumes; ++i) { 
+     if (TDC_times[i] != 0){
+    }
+  }
+  myRootOutput->SetSaveTriggerInfo(myRootOutput->TDC_Volumes, TDC_times);
+
+
+  //irene
+  //scintillators
+  if ((tmpVolumeID >= 903 && tmpVolumeID <= 904)  && edep_save > 0) {
+    myRootOutput->SetSaveMuFormationScintInfo(tmpVolumeID, edep_save, time_save);
+  }
+  //bgo
+  else if (((tmpVolumeID >= 909 && tmpVolumeID <= 911) || (tmpVolumeID >= 918 && tmpVolumeID <= 920)) && edep_save > 0) {
+    myRootOutput->SetSaveMuFormationBGOInfo(tmpVolumeID, edep_save, time_save);
+  }
+
+  if (isFirstStepInVolume) {
 	if (tmpVolumeID!=0) {
 	  G4int particle_id_save=p_definition->GetPDGEncoding();
 	  G4double ke_save=preStepPoint->GetKineticEnergy();
-    G4double edep_save=aStep->GetTotalEnergyDeposit();
 	  G4double x_save=preStepPosition.x();
 	  G4double y_save=preStepPosition.y();
 	  G4double z_save=preStepPosition.z();
-	  G4double time_save=preStepPoint->GetGlobalTime();
 	  G4double px_save=preStepPoint->GetMomentum().x();
 	  G4double py_save=preStepPoint->GetMomentum().y();
 	  G4double pz_save=preStepPoint->GetMomentum().z();
 	  G4double polx_save=preStepPoint->GetPolarization().x();
 	  G4double poly_save=preStepPoint->GetPolarization().y();
 	  G4double polz_save=preStepPoint->GetPolarization().z();
-    //irene
-    //scintillators
-    if ((tmpVolumeID >= 903 && tmpVolumeID <= 904)  && edep_save > 0) {
-      myRootOutput->SetSaveMuFormationScintInfo(tmpVolumeID, edep_save, time_save);
-    }
-    //bgo
-    else if (((tmpVolumeID >= 909 && tmpVolumeID <= 911) || (tmpVolumeID >= 918 && tmpVolumeID <= 920)) && edep_save > 0) {
-      myRootOutput->SetSaveMuFormationBGOInfo(tmpVolumeID, edep_save, time_save);
-    }
-    
 	  myRootOutput->SetSaveDetectorInfo(tmpVolumeID,particle_id_save,ke_save,edep_save,x_save,y_save,z_save,time_save,px_save,py_save,pz_save,polx_save,poly_save,polz_save);
     //
           //-----------------------------------------------------------------------------------------
@@ -265,6 +287,7 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	  // myRootOutput->htest8->Fill(y_save);
 	  //-----------------------------------------------------------------------------------------
 	}
+  }
 
   
       
