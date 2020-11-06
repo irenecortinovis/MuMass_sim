@@ -100,10 +100,10 @@ G4bool mumassMu2SRelaxation::GetDatas(const G4Step* aStep)
             G4double random_theta = G4UniformRand()*TMath::Pi();
             G4double random_phi = G4UniformRand()*TMath::Pi()*2;
             G4double r = CLHEP::h_Planck * CLHEP::c_light / (122*CLHEP::nm);           
-            gamma_direction = G4ThreeVector(r*cos(random_theta)*sin(random_phi),r*cos(random_phi)*sin(random_theta),r*cos(random_theta));
+            gamma_direction = G4ThreeVector(r*sin(random_theta)*cos(random_phi),r*sin(random_phi)*sin(random_theta),r*cos(random_theta));
+            
             DP2 = new G4DynamicParticle(particleTable->FindParticle("gamma"), gamma_direction);
             DP2->SetProperTime(aStep->GetTrack()->GetDynamicParticle()->GetProperTime());
-            
             //for now, recoil caused by photon emission is neglected
             mu_momentum_direction = aStep->GetTrack()->GetDynamicParticle()->GetMomentumDirection();
             mu_kinetic_energy = aStep->GetTrack()->GetDynamicParticle()->GetKineticEnergy();
