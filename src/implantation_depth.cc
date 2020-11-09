@@ -65,7 +65,7 @@ G4double SilicaImplantDepth::GetAlpha(
 {
 
   double_t graph_energy[20] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
-  double_t graph_alpha[20] = {0.121814,0.102205,0.0927978,0.0870097,0.0823915,0.0788111,0.0764954,0.0734189,0.0711445,0.0692638,0.0678075,0.0654901,0.0638953,0.0623306,0.0610625,0.0598554,0.0585537,0.0575061,0.0555962,0.0547255};
+  double_t graph_alpha[20] = {1.33882,0.912562,0.735104,0.676613,0.61516,0.587658,0.547345,0.547428,0.525994,0.544047,0.527182,0.518806,0.51848,0.498583,0.523297,0.500482,0.495397,0.488719,0.479994,0.477145};
   TGraph *gr = new TGraph(20, graph_energy, graph_alpha);
   TSpline3 *s = new TSpline3("grs",gr);
   G4double alpha = s->Eval(E/CLHEP::keV);
@@ -105,6 +105,8 @@ G4double SilicaImplantDepth::GetDepth(
   f1->FixParameter(3, GetAlpha(E));
   f1->FixParameter(4, 10000);
   f1->SetNpx(100);
+    
+  std::cout << GetConstant(E) << ", " << GetMean(E) << ", " << GetSigma(E) << ", " << GetAlpha(E) << std::endl;
 
   G4double implant_depth = f1->GetRandom(); //in nm
   delete f1;
