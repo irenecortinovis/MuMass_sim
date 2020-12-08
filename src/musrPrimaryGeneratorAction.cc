@@ -40,7 +40,7 @@
 #include <iomanip>
 #include "musrRootOutput.hh"   //cks for storing some info in the Root output file
 #include "musrErrorMessage.hh"
-
+#include "TF1.h"
 
 G4bool musrPrimaryGeneratorAction::setRandomNrSeedAccordingEventNr=0;
 G4bool musrPrimaryGeneratorAction::setRandomNrSeedFromFile=0;
@@ -384,71 +384,140 @@ void musrPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       py = py/p;
       pz = pz/p;
    }
-      
-  particleGun->SetParticlePosition(G4ThreeVector(x,y,z));
-  G4double particle_mass = particleGun->GetParticleDefinition()->GetPDGMass();
-  G4double particleEnergy = std::sqrt(p*p+particle_mass*particle_mass)-particle_mass;
-  particleGun->SetParticleEnergy(particleEnergy);
-  particleGun->SetParticleTime(ParticleTime);  //P.B. 13 May 2009
-  particleGun->SetParticleMomentumDirection(G4ThreeVector(px,py,pz));
-  particleGun->SetParticlePolarization(G4ThreeVector(xpolaris,ypolaris,zpolaris));
-  particleGun->GeneratePrimaryVertex(anEvent);
-
-  //  G4cout<<"musrPrimaryGeneratorAction: Parameters:"<<G4endl;
-  //  G4cout<<"     x0,y0,z0="<<x0/mm<<","<<y0/mm<<","<<z0/mm<<"   Sigma="<<xSigma/mm<<","<<ySigma/mm<<","<<zSigma/mm<<G4endl;
-  //  G4cout<<"     rMaxAllowed="<<rMaxAllowed/mm<<"   zMaxAllowed="<<zMaxAllowed/mm<<"   zMinAllowed="<<zMinAllowed/mm<<G4endl;
-  //  G4cout<<"     p0="<<p0/MeV<<"   pSigma="<<pSigma/MeV
-  //	<<"   pMinAllowed="<<pMinAllowed/MeV<<"  pMaxAllowed=<<"<<pMaxAllowed/MeV<<G4endl;
-  //  G4cout<<"     angle0="<<xangle0/deg<<","<<yangle0/deg<<",nic"
-  //	<<"   Sigma="<<xangleSigma/deg<<","<<yangleSigma/deg<<",nic"<<G4endl;
-  //  G4cout<<"     pitch="<<pitch/deg<<G4endl;
-  //
-  //  G4cout<<"musrPrimaryGeneratorAction: Generated muon:"<<G4endl;
-  //  G4cout<<"     x,y,z="<<x/mm<<","<<y/mm<<","<<z/mm<<"      angle="<<xangle/deg<<","<< yangle/deg<<",nic"<<G4endl;
-  //  G4cout<<"     p="<<px/MeV<<","<<py/MeV<<","<<pz/MeV<<"    E="<< (particleGun->GetParticleEnergy())/MeV<<G4endl;
-  //  G4cout<<"     polarisation="<<xpolaris<<","<<ypolaris<<","<<zpolaris<<G4endl;
-
   
-
-
-  // if requested by "/gun/decaytimelimits", set the decay time of the muon such that it is within
-  // the required time window.  Otherwise the decay time is set internally by Geant.
-  if (muonDecayTimeMax>0.) {
-    //    G4cout<<"muonDecayTimeMin="<<muonDecayTimeMin/ns<<" ns ,  muonDecayTimeMax="<<muonDecayTimeMax/ns
-    //	  <<" ns ,   muonMeanLife="<<muonMeanLife/ns<<" ns."<<G4endl;
-    // find the primary muon
-    G4PrimaryParticle* generatedMuon = anEvent->GetPrimaryVertex(0)->GetPrimary(0);
-    //    G4double decayLowerLimit = 1-exp(-muonDecayTimeMin/muonMeanLife);
-    //    G4double decayUpperLimit = 1-exp(-muonDecayTimeMax/muonMeanLife);
-    //    G4double randomVal       = G4UniformRand()*(decayUpperLimit-decayLowerLimit) + decayLowerLimit;
-    //    G4double decaytime       = -muonMeanLife*log(1-randomVal);
-    //
-    //  The following code is numerically more stable compared to the commented lines above:
-    G4double decaytime;
-    if (muonDecayTimeMin==muonDecayTimeMax) {decaytime=muonDecayTimeMin;}
-    else {
-      G4double expMin    = exp(-muonDecayTimeMin/muonMeanLife);
-      G4double expMax    = exp(-muonDecayTimeMax/muonMeanLife);
-      decaytime = -muonMeanLife * log(G4UniformRand()*(expMax-expMin)+expMin);
-    }
-    //    G4cout<<"decaytime="<<decaytime/ns<<"ns."<< G4endl;
-    generatedMuon->SetProperTime(decaytime);
+  //irene
+  if (shootMuonium){
+      G4double target_x = 20;
+      G4double target_y = 4;
+      G4double target_z = 154.4;
+      G4double mu_temperature = 250;
+      
+      //x = -(target_x/2)+G4UniformRand()*target_x;
+      //y = -(target_y/2)+G4UniformRand()*target_y;
+      //z = target_z;   
+      
+      x = -(target_x/2)+G4UniformRand()*target_x;      
+      do{y = G4RandGauss::shoot(0,2);}
+      while (y<-(target_y/2) || y>(target_y/2));
+      z = target_z;   
+      
+      //G4double cosTheta = 2.*G4UniformRand()-1.;
+      //G4double sinTheta = sqrt(1.-cosTheta*cosTheta);
+      //G4double phi     = 2*TMath::Pi() * G4UniformRand();
+      
+      G4double sinTheta = G4UniformRand();
+      G4double cosTheta = sqrt(1.-sinTheta*sinTheta);
+      G4double phi      = 2*TMath::Pi() * G4UniformRand();
+     
+      if(cosTheta>0.){ cosTheta*=-1.;}
+      px = sinTheta*cos(phi);
+      py = sinTheta*sin(phi);
+      pz = cosTheta;
+      //px = 0;
+      //py = 0;
+      //pz = -1;
+      //define here kinetic energy, according to Maxwell-Boltzmann, temperature comes from macro input 
+      
+      
+      
+      G4double mu_kinetic_energy = MuFormationEKin(mu_temperature);
+      G4double mu_mass = particleGun->GetParticleDefinition()->GetPDGMass(); //check!!!
+      p = sqrt(2*mu_kinetic_energy*mu_mass);
+  
   }
+    
+   
+    G4double LaserRadius = 0.9; //hardcoded laser radius! to fix
+    G4double LaserZ = 153.4;
+    //find intersection between Ps trajectory and laser (ray-cylinder intersection)
+    G4double a=pow(py,2)+pow(pz,2);
+    G4double b=2*py*y+2*pz*(z-LaserZ);
+    G4double c1=pow(y,2)+pow((z-LaserZ),2)-pow((LaserRadius),2); 
+    G4double SqrtArgument=pow(b,2)-4*a*c1;
+    
 
-  // Set the variable "timeToNextEvent", which is the time difference between this event and the next one
-  // at a continuous muon beam.
-  G4double timeIntervalBetweenTwoEvents = meanArrivalTime * CLHEP::RandExponential::shoot(1);
+    if(SqrtArgument>0.){
+      particleGun->SetParticlePosition(G4ThreeVector(x,y,z));
+      G4double particle_mass = particleGun->GetParticleDefinition()->GetPDGMass();
+      G4double particleEnergy = std::sqrt(p*p+particle_mass*particle_mass)-particle_mass;
+      particleGun->SetParticleEnergy(particleEnergy);
+      particleGun->SetParticleTime(ParticleTime);  //P.B. 13 May 2009
+      particleGun->SetParticleMomentumDirection(G4ThreeVector(px,py,pz));
+      particleGun->SetParticlePolarization(G4ThreeVector(xpolaris,ypolaris,zpolaris));
+      particleGun->GeneratePrimaryVertex(anEvent);
+      
+      //std::cout << "x: " << x << std::endl;
+      //std::cout << "y: " << y << std::endl;
+      //std::cout << "z " << z << std::endl;
+      //std::cout << "px: " << px << std::endl;
+      //std::cout << "py: " << py << std::endl;
+      //std::cout << "pz " << pz << std::endl; 
+      //std::cout << "particleEnergy " << particleEnergy << std::endl;
 
-  // Save variables into ROOT output file:
-  myRootOutput->SetInitialMuonParameters(x,y,z,px,py,pz,xpolaris,ypolaris,zpolaris,ParticleTime);
-  myRootOutput->StoreGeantParameter(7,float(numberOfGeneratedEvents));
-  myRootOutput->SetTimeToNextEvent(timeIntervalBetweenTwoEvents);
-  if (boolPrintInfoAboutGeneratedParticles) {
-    G4cout<<"musrPrimaryGeneratorAction::GeneratePrimaries:  x="<<x<<", y="<<y<<", z="<<z<<G4endl;
-    G4cout<<"      px="<<px<<", py="<<py<<", pz="<<pz<<", xpolaris="<<xpolaris<<", ypolaris="<<ypolaris<<", zpolaris="<<zpolaris<<G4endl;
-    G4cout<<"      numberOfGeneratedEvents="<<numberOfGeneratedEvents<<G4endl;
-    G4cout<<"      ------------------------------------"<<G4endl;
-  }
+      //  G4cout<<"musrPrimaryGeneratorAction: Parameters:"<<G4endl;
+      //  G4cout<<"     x0,y0,z0="<<x0/mm<<","<<y0/mm<<","<<z0/mm<<"   Sigma="<<xSigma/mm<<","<<ySigma/mm<<","<<zSigma/mm<<G4endl;
+      //  G4cout<<"     rMaxAllowed="<<rMaxAllowed/mm<<"   zMaxAllowed="<<zMaxAllowed/mm<<"   zMinAllowed="<<zMinAllowed/mm<<G4endl;
+      //  G4cout<<"     p0="<<p0/MeV<<"   pSigma="<<pSigma/MeV
+      //	<<"   pMinAllowed="<<pMinAllowed/MeV<<"  pMaxAllowed=<<"<<pMaxAllowed/MeV<<G4endl;
+      //  G4cout<<"     angle0="<<xangle0/deg<<","<<yangle0/deg<<",nic"
+      //	<<"   Sigma="<<xangleSigma/deg<<","<<yangleSigma/deg<<",nic"<<G4endl;
+      //  G4cout<<"     pitch="<<pitch/deg<<G4endl;
+      //
+      //  G4cout<<"musrPrimaryGeneratorAction: Generated muon:"<<G4endl;
+      //  G4cout<<"     x,y,z="<<x/mm<<","<<y/mm<<","<<z/mm<<"      angle="<<xangle/deg<<","<< yangle/deg<<",nic"<<G4endl;
+      //  G4cout<<"     p="<<px/MeV<<","<<py/MeV<<","<<pz/MeV<<"    E="<< (particleGun->GetParticleEnergy())/MeV<<G4endl;
+      //  G4cout<<"     polarisation="<<xpolaris<<","<<ypolaris<<","<<zpolaris<<G4endl;
+
+
+
+
+      // if requested by "/gun/decaytimelimits", set the decay time of the muon such that it is within
+      // the required time window.  Otherwise the decay time is set internally by Geant.
+      if (muonDecayTimeMax>0.) {
+        //    G4cout<<"muonDecayTimeMin="<<muonDecayTimeMin/ns<<" ns ,  muonDecayTimeMax="<<muonDecayTimeMax/ns
+        //	  <<" ns ,   muonMeanLife="<<muonMeanLife/ns<<" ns."<<G4endl;
+        // find the primary muon
+        G4PrimaryParticle* generatedMuon = anEvent->GetPrimaryVertex(0)->GetPrimary(0);
+        //    G4double decayLowerLimit = 1-exp(-muonDecayTimeMin/muonMeanLife);
+        //    G4double decayUpperLimit = 1-exp(-muonDecayTimeMax/muonMeanLife);
+        //    G4double randomVal       = G4UniformRand()*(decayUpperLimit-decayLowerLimit) + decayLowerLimit;
+        //    G4double decaytime       = -muonMeanLife*log(1-randomVal);
+        //
+        //  The following code is numerically more stable compared to the commented lines above:
+        G4double decaytime;
+        if (muonDecayTimeMin==muonDecayTimeMax) {decaytime=muonDecayTimeMin;}
+        else {
+          G4double expMin    = exp(-muonDecayTimeMin/muonMeanLife);
+          G4double expMax    = exp(-muonDecayTimeMax/muonMeanLife);
+          decaytime = -muonMeanLife * log(G4UniformRand()*(expMax-expMin)+expMin);
+        }
+        //    G4cout<<"decaytime="<<decaytime/ns<<"ns."<< G4endl;
+        generatedMuon->SetProperTime(decaytime);
+      }
+
+      // Set the variable "timeToNextEvent", which is the time difference between this event and the next one
+      // at a continuous muon beam.
+      G4double timeIntervalBetweenTwoEvents = meanArrivalTime * CLHEP::RandExponential::shoot(1);
+
+      // Save variables into ROOT output file:
+      myRootOutput->SetInitialMuonParameters(x,y,z,px,py,pz,particleEnergy,acos(pz),xpolaris,ypolaris,zpolaris,ParticleTime);
+      myRootOutput->StoreGeantParameter(7,float(numberOfGeneratedEvents));
+      myRootOutput->SetTimeToNextEvent(timeIntervalBetweenTwoEvents);
+      if (boolPrintInfoAboutGeneratedParticles) {
+        G4cout<<"musrPrimaryGeneratorAction::GeneratePrimaries:  x="<<x<<", y="<<y<<", z="<<z<<G4endl;
+        G4cout<<"      px="<<px<<", py="<<py<<", pz="<<pz<<", xpolaris="<<xpolaris<<", ypolaris="<<ypolaris<<", zpolaris="<<zpolaris<<G4endl;
+        G4cout<<"      numberOfGeneratedEvents="<<numberOfGeneratedEvents<<G4endl;
+        G4cout<<"      ------------------------------------"<<G4endl;
+      }
+     }
+    //else{
+       //laserDrop = true;
+       //std::cout << "laserDrop true: " << laserDrop << std::endl;
+
+    //}
+    
+      
+
 }
 
 
@@ -690,4 +759,41 @@ void musrPrimaryGeneratorAction::swapTheAxisInTurtle(float& x_x, float& x_xprime
        tree->SetBranchAddress("event",&event);  }
 
 }
+
+
+  void musrPrimaryGeneratorAction::SetMuonium() {
+  shootMuonium = true;
+  G4cout << "Muonium cosine distribution from target."<< G4endl;
+}
   
+      
+G4double mw_boltzmann_f(Double_t *x, Double_t *par) {
+    
+    //par[0] = m
+    //par[1] = kb
+    //par[2] = temperature
+    return (4*TMath::Pi()*pow(par[0]/(2*TMath::Pi()*par[1]*par[2]),3/2)*pow(x[0],2)*TMath::Exp(-par[0]*pow(x[0],2)/(2*par[1]*par[2])));
+}
+    
+G4double musrPrimaryGeneratorAction::MuFormationEKin(G4double temperature)
+{
+  //Calculate the energy distribution of the Mu assuming a Maxwell-Boltzmann profile for a given temperature
+
+  G4double k_b = 1.380658e-23; //Boltzmann constant J/K
+  G4double m_e = 9.1093897e-31; //mass of electron kg
+  G4double m_u = 1.8835316e-28; //mass of muon kg
+  
+  G4double m_mu = m_e + m_u; //mass of muonium kg
+  
+  TF1 *maxwell_boltzmann = new TF1("maxwell_boltzmann", mw_boltzmann_f, 0, 20000, 3);
+  maxwell_boltzmann->FixParameter(0, m_mu);
+  maxwell_boltzmann->FixParameter(1, k_b);
+  maxwell_boltzmann->FixParameter(2, temperature);
+  maxwell_boltzmann->SetNpx(100);
+  
+  G4double rnd_velocity = maxwell_boltzmann->GetRandom(); // m/s
+  G4double rnd_energy = 0.5*pow(rnd_velocity,2)*m_mu*(6.242*pow(10,18))*CLHEP::eV; //we only give it here a G4unit!
+  delete maxwell_boltzmann;
+  
+  return rnd_energy;
+}

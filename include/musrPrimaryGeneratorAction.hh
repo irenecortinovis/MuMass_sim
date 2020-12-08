@@ -91,6 +91,7 @@ class musrPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetMomHisto(G4String MomFileName);
     void SetPosHisto(G4String PosFileName);
     void SetMomANDPosHisto(G4String MomPosFileName);
+    void SetMuonium();
 
 
     static G4String GetPrimaryName();                
@@ -147,6 +148,7 @@ class musrPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4bool   takePosFromHisto;
     G4bool   takeMomFromHisto;
     G4bool   takeMomANDPosFromHisto;
+    G4bool   shootMuonium;
 
 
     G4double z0_InitialTurtle;                   // z0 at whith the turtle file was generated.
@@ -166,6 +168,11 @@ public:
     static std::vector<int> * GetPointerToSeedVector();
     static G4int lastEventID_in_pointerToSeedVector;
     G4double  decaytime;
+    //irene
+    //G4double laserDrop;               // Checks if particle intersects laser
+    G4double MuFormationEKin(G4double temperature);
+
+
 
 private:
   static std::vector<int> * pointerToSeedVector;
