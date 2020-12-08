@@ -201,6 +201,13 @@ musrPrimaryGeneratorMessenger::musrPrimaryGeneratorMessenger(musrPrimaryGenerato
   setMomANDPosHistoCmd->SetGuidance("Set the file name for the histogram with the momentum and position profile.");
   setMomANDPosHistoCmd->SetParameterName("mes_MomAndPosHisto",true);
   setMomANDPosHistoCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+    
+  //if this is set, muonium is generated with a cos distribution from the target
+  setMuoniumCmd = new G4UIcmdWithAString("/gun/MuGeneration",this);
+  setMuoniumCmd->SetGuidance("Muonium cos distribution from target");
+  setMuoniumCmd->SetParameterName("mes_MuGeneration",true);
+  setMuoniumCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -237,6 +244,7 @@ musrPrimaryGeneratorMessenger::~musrPrimaryGeneratorMessenger()
   delete setPosHistoCmd;
   delete setMomHistoCmd;
   delete setMomANDPosHistoCmd;
+  delete setMuoniumCmd;
 
 }
 
@@ -304,6 +312,8 @@ void musrPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String n
     { musrAction->SetPosHisto(newValue);}
   if( command == setMomANDPosHistoCmd)
     { musrAction->SetMomANDPosHisto(newValue);}
+  if( command == setMuoniumCmd)
+    { musrAction->SetMuonium();}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

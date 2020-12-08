@@ -89,8 +89,13 @@ void mumassMuFormation::GetDatas(const G4Step* aStep)
 	 if(rnd<mu_formation_prob) 
 	   {
           //define here momentum direction (cosTheta distribution)
-          G4double cosTheta = 2.*G4UniformRand()-1.;
-          G4double sinTheta = sqrt(1.-cosTheta*cosTheta);
+         //wrong!!
+          //G4double cosTheta = 2.*G4UniformRand()-1.;
+          //G4double sinTheta = sqrt(1.-cosTheta*cosTheta);
+          //G4double phi     = 2*TMath::Pi() * G4UniformRand();
+         //irene
+          G4double sinTheta = 2.*G4UniformRand()-1.;
+          G4double cosTheta = sqrt(1.-sinTheta*sinTheta);
           G4double phi     = 2*TMath::Pi() * G4UniformRand();
           if(cosTheta>0.){ cosTheta*=-1.;}
           mu_momentum_direction = G4ThreeVector(sinTheta*cos(phi),sinTheta*sin(phi),cosTheta);
@@ -111,6 +116,7 @@ void mumassMuFormation::GetDatas(const G4Step* aStep)
           else if(mu_temperature == 250){diffusion_constant = 1.6*pow(10,-4)*pow(CLHEP::cm,2)/CLHEP::s;}
           else{diffusion_constant = 10000000;} //no diffusion defined, making time negligible here          
           diffusion_time = pow(implant_depth,2)/diffusion_constant;
+          
           //diffusion_time = 0;
           
           //cout << "Mu was formed with energy of " << mu_kinetic_energy /CLHEP::eV *1000.0 << " meV" << endl;
@@ -135,6 +141,10 @@ void mumassMuFormation::GetDatas(const G4Step* aStep)
 	 
 	 // IMPORTANT : COPY THOSE DATA TO GET THE SAME PARTICLE PROPERTIES!!!
 	 // SHOULD BE KEPT WHEN BUILDING A PARTICLE CHANGE  
+     
+     //debugging
+     //std::cout << (aStep->GetTrack()->GetDynamicParticle()->GetProperTime())/CLHEP::us << ", " << diffusion_time/CLHEP::us << ", " << aStep->GetTrack()->GetDynamicParticle()->GetPreAssignedDecayProperTime() << std::endl;
+         
     DP->SetProperTime(aStep->GetTrack()->GetDynamicParticle()->GetProperTime()+diffusion_time);
 	 DP->SetPolarization(aStep->GetTrack()->GetDynamicParticle()->GetPolarization().x(),
 	                     aStep->GetTrack()->GetDynamicParticle()->GetPolarization().y(),

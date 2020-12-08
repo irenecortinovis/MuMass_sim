@@ -654,6 +654,11 @@ void musrPhysicsList::SetCuts()
   //  G4cout<<"Kamil:   cutForElectron = "<<cutForElectron/mm<<" mm"<<G4endl;
   //  G4cout<<"Kamil:   cutForMuons = "<<cutForMuon/mm<<" mm"<<G4endl;
 
+  //irene
+  //G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(1*CLHEP::eV, 1e+08*CLHEP::MeV);
+
+  std::cout << "low " << G4ProductionCutsTable::GetProductionCutsTable()->GetLowEdgeEnergy()/CLHEP::eV << std::endl;
+  //std::cout << "high " << G4ProductionCutsTable::GetProductionCutsTable()->GetHighEdgeEnergy() << std::endl;
     
   if (verboseLevel>0) DumpCutValuesTable();
   DumpCutValuesTable();

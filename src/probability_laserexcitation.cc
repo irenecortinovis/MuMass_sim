@@ -58,16 +58,15 @@ double Prob_LaserExc::betastark = 1.01457928 * (1.39927*pow(10,-4)-(-2.67827*pow
 double Prob_LaserExc::gdecay = pow(2.1969811*CLHEP::microsecond,-1);
 double Prob_LaserExc::edecay = pow(2.1969811*CLHEP::microsecond,-1);
 
-double Prob_LaserExc::detuning = 0;
+double Prob_LaserExc::detuning = -2*3.14*0*CLHEP::megahertz;
 
 //Only interesting for pulsed:
 double Prob_LaserExc::LaserTimeOffset = 0;
 double Prob_LaserExc::DistanceSourceLaserX = 0; 
 double Prob_LaserExc::LaserFWHM = 0;
-
-double Prob_LaserExc::lambda = 243*CLHEP::nanometer;
+double Prob_LaserExc::lambda = 244*CLHEP::nanometer;
 double Prob_LaserExc::w0 = 0.3*CLHEP::millimeter;
-double Prob_LaserExc::Epr = 30*CLHEP::watt;
+double Prob_LaserExc::Epr = 25*CLHEP::watt;
 
 double Prob_LaserExc::LaserPos_X = 0;
 double Prob_LaserExc::LaserPos_Y = 0;
@@ -78,6 +77,7 @@ G4double Prob_LaserExc::GetTransitionProbability(double TOF)
 // time of flight, how long was the particle in the laser volume
 
 {
+  //std::cout << "TOF: " << TOF/CLHEP::ns << std::endl;
     
   c[0] = 1.; 
   c[1] = 0.; 
@@ -95,19 +95,21 @@ G4double Prob_LaserExc::GetTransitionProbability(double TOF)
   dt=dtnext;
 
   while(jk<nnint && t<TOF){
- 
+    
     dt=dtnext;
     cderiv(t,c,dc);
     Rkqs(c, dc, nvar, t, dt, eps, yscal, &dtdid, &dtnext);
     dt=dtdid;t+=dt;
-  
     jk++;
   }
   
   ProbMu2S=c[3];
   ProbMu1S=c[0];
   G4double piyld=c[4];
-  
+    
+  //std::cout << c[0] << " " << c[1] << " " << c[2] << " " << c[3] << " " << c[4] << std::endl;
+    
+  //std::cout << ProbMu2S << std::endl;
   return ProbMu2S;
 }
 
@@ -116,16 +118,23 @@ void Prob_LaserExc::cderiv(G4double time, G4double c[], G4double dc[]){
   
 {
     //betarabi, betaioni, betastark from macro
-    G4double wrabi=4*TMath::Pi()*betarabi*LaserIntensity(Mu_location, Mu_momentum_direction, time, Mu_speed,true);
-    G4double wioni=2*TMath::Pi()*betaioni*LaserIntensity(Mu_location, Mu_momentum_direction, time, Mu_speed,false);
-    G4double wstark=2*TMath::Pi()*betastark*LaserIntensity(Mu_location, Mu_momentum_direction, time, Mu_speed,false);
-
+    G4double wrabi=4*TMath::Pi()*betarabi*2*LaserIntensity(Mu_location, Mu_momentum_direction, time, Mu_speed,true);
+    //G4double wioni=2*TMath::Pi()*betaioni*2*LaserIntensity(Mu_location, Mu_momentum_direction, time, Mu_speed,false);
+    //G4double wstark=2*TMath::Pi()*betastark*2*LaserIntensity(Mu_location, Mu_momentum_direction, time, Mu_speed,false);
+    G4double wioni=0;
+    G4double wstark=0;
+    
     complex<double> i(0.,1.);
     double gg = c[0];
     complex<double> ge(c[1],c[2]);
     double ee = c[3];
     double dgg,dee;
     complex<double> dge;
+    
+    //std::cout << "detuning " << detuning/CLHEP::hertz << " " << detuning << std::endl;
+    //std::cout << "wstark " << wstark/CLHEP::hertz << " " << wstark << std::endl;
+    //std::cout << "wrabi " << wrabi/CLHEP::hertz << " " << wrabi << std::endl;
+
 
     //gdecay, edecay, detuning from macro
     dgg = -wrabi*imag(ge)-gdecay*gg;
@@ -159,14 +168,16 @@ G4double Prob_LaserExc::LaserIntensity(G4ThreeVector MuLaserIntersection, G4Thre
     for(int j=0;j<3;j++)
     {
         MuPos[j]=(MuLaserIntersection[j]-LaserPos[j])+MuInLaserPropagation[j]*time*MuVelocity;
+        //std::cout << MuLaserIntersection[j] << " " <<  LaserPos[j] << " " <<  MuInLaserPropagation[j] << " " <<  time << " " << MuVelocity << std::endl;
     }
+    
     r2=pow(MuPos[1],2)+pow(MuPos[2],2); // y^2 + z^2, since x is laser propagation
     //Rayleigh range [m], w0 and lambda from macro
     G4double zR= TMath::Pi()*pow(w0,2)/lambda;
     
     //Beam radius [m] calculated for the geometry in which the beam axis is in x (it would more correct to write wx...)
     //w0 from macro
-    G4double wz= w0*sqrt((1+pow(MuPos[0],2)/pow(zR,2)));
+    G4double wz= w0*sqrt(1+pow(MuPos[0],2)/pow(zR,2));
     //Pulsed Laser
     /* ---------- INCLUDE LASER TIME PROFILE (GAUSSIAN) HERE --------- */
     /*
@@ -194,7 +205,7 @@ G4double Prob_LaserExc::LaserIntensity(G4ThreeVector MuLaserIntersection, G4Thre
     Pt = Epr;
     G4double ILaser=2*Pt/(TMath::Pi()*pow(wz,2))*exp(-2*r2/pow(wz,2));
     //cout << Pt << " and " << wz << " and " << r2 << " and " << MuPos[1] << " and " << MuPos[2] << endl;
-    //cout << "Laser Power in Watt/cm^2: " << ILaser/(CLHEP::watt/CLHEP::cm2) << endl;
+    //cout << "Laser Power in Watt/m^2: " << ILaser/(CLHEP::watt/CLHEP::m2) << endl;
     return ILaser;     
      
 }     

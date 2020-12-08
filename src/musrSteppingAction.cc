@@ -20,7 +20,7 @@
  *  along with this program; if not, write to the Free Software            *
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.              *
  ***************************************************************************/
-
+#include "musrPrimaryGeneratorAction.hh"
 #include "musrSteppingAction.hh"
 #include "G4SteppingManager.hh"
 #include "G4UnitsTable.hh"
@@ -95,6 +95,9 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
   G4Track* aTrack = aStep->GetTrack();
 
   // kill the track, if required by user:
+  //irene
+  //std::cout << "checking laserDrop: " << musrPrimaryGeneratorAction::laserDrop << std::endl;
+  //if (musrPrimaryGeneratorAction::laserDrop) {aTrack->SetTrackStatus(fStopAndKill); return;} 
   if (aTrack->GetDefinition()) {
     G4String p_name = aTrack->GetDynamicParticle()->GetDefinition()->GetParticleName();
     if      ((musrParameters::killAllPositrons)&&(p_name == "e+")) {aTrack->SetTrackStatus(fStopAndKill); return;}   // suspend the track
@@ -107,7 +110,8 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
   G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
   G4ThreeVector preStepPosition = preStepPoint->GetPosition();
   G4ThreeVector postStepPosition = postStepPoint->GetPosition();
-
+ 
+  
   //  suspend the track if too many steps has already happened (relevant at high field)
   if (aTrack->GetCurrentStepNumber()>musrParameters::maximumNrOfStepsPerTrack) {
     char eMessage[200]; 
@@ -229,43 +233,15 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	isFirstStepInVolume=true;
       }
 
-  //irene - moved them outside of if firststepinvolume
+  
+
   G4int tmpVolumeID=saveVolumeMapping[actualVolume];
-  G4double time_save=preStepPoint->GetGlobalTime();
-  G4double edep_save=aStep->GetTotalEnergyDeposit();
-
-  //irene
-  G4double TDC_times[myRootOutput->nVolumes] = {0};
-  for(G4int i = 0; i < myRootOutput->nVolumes; ++i) { 
-    if (TDC_times[i] != 0){
-    }
-  }
-  for(G4int i = 0; i < myRootOutput->nVolumes; ++i) {
-    if (tmpVolumeID == myRootOutput->TDC_Volumes[i] && edep_save > 0){ //change with some threshold
-      TDC_times[i] = time_save;
-      //std::cout << tmpVolumeID << ", " << TDC_times[i]/CLHEP::microsecond << ", " << edep_save/CLHEP::MeV << std::endl;
-
-    } 
-  }
-  for(G4int i = 0; i < myRootOutput->nVolumes; ++i) { 
-     if (TDC_times[i] != 0){
-    }
-  }
-  myRootOutput->SetSaveTriggerInfo(myRootOutput->TDC_Volumes, TDC_times);
 
 
-  //irene
-  //scintillators
-  if ((tmpVolumeID >= 903 && tmpVolumeID <= 904)  && edep_save > 0) {
-    myRootOutput->SetSaveMuFormationScintInfo(tmpVolumeID, edep_save, time_save);
-  }
-  //bgo
-  else if (((tmpVolumeID >= 909 && tmpVolumeID <= 911) || (tmpVolumeID >= 918 && tmpVolumeID <= 920)) && edep_save > 0) {
-    myRootOutput->SetSaveMuFormationBGOInfo(tmpVolumeID, edep_save, time_save);
-  }
-
-  if (isFirstStepInVolume) {
+  //if (isFirstStepInVolume) {
 	if (tmpVolumeID!=0) {
+    G4double time_save=preStepPoint->GetGlobalTime();
+    G4double edep_save=aStep->GetTotalEnergyDeposit();
 	  G4int particle_id_save=p_definition->GetPDGEncoding();
 	  G4double ke_save=preStepPoint->GetKineticEnergy();
 	  G4double x_save=preStepPosition.x();
@@ -278,6 +254,40 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	  G4double poly_save=preStepPoint->GetPolarization().y();
 	  G4double polz_save=preStepPoint->GetPolarization().z();
 	  myRootOutput->SetSaveDetectorInfo(tmpVolumeID,particle_id_save,ke_save,edep_save,x_save,y_save,z_save,time_save,px_save,py_save,pz_save,polx_save,poly_save,polz_save);
+    
+ 
+
+
+    //irene
+    G4double TDC_times[myRootOutput->nVolumes] = {0};
+    for(G4int i = 0; i < myRootOutput->nVolumes; ++i) { 
+      if (TDC_times[i] != 0){
+      }
+    }
+    for(G4int i = 0; i < myRootOutput->nVolumes; ++i) {
+      if (tmpVolumeID == myRootOutput->TDC_Volumes[i] && edep_save > 0){ //change with some threshold
+        TDC_times[i] = time_save;
+        //std::cout << tmpVolumeID << ", " << TDC_times[i]/CLHEP::microsecond << ", " << edep_save/CLHEP::MeV << std::endl;
+
+      } 
+    }
+    for(G4int i = 0; i < myRootOutput->nVolumes; ++i) { 
+      if (TDC_times[i] != 0){
+      }
+    }
+    myRootOutput->SetSaveTriggerInfo(myRootOutput->TDC_Volumes, TDC_times);
+
+
+    //irene
+    //scintillators
+    if ((tmpVolumeID >= 903 && tmpVolumeID <= 904)  && edep_save > 0) {
+      myRootOutput->SetSaveMuFormationScintInfo(tmpVolumeID, edep_save, time_save);
+    }
+    //bgo
+    else if (((tmpVolumeID >= 909 && tmpVolumeID <= 911) || (tmpVolumeID >= 918 && tmpVolumeID <= 920)) && edep_save > 0) {
+      myRootOutput->SetSaveMuFormationBGOInfo(tmpVolumeID, edep_save, time_save);
+    }
+    
     //
           //-----------------------------------------------------------------------------------------
           //  Uncoment for iterative musrSim runs (e.g. when searching for a quadrupole triplet focus using a python script)
@@ -286,8 +296,9 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	  // myRootOutput->htest7->Fill(x_save);
 	  // myRootOutput->htest8->Fill(y_save);
 	  //-----------------------------------------------------------------------------------------
-	}
-  }
+	  }
+  
+  
 
   
       
@@ -360,6 +371,8 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
       const G4VProcess* process = postStepPoint->GetProcessDefinedStep();
       if (process!=NULL) {
 	G4String processName = process->GetProcessName();
+  
+
 	if (processName=="DecayWithSpin") {
 	  //	  std::cout<<"musrSteppingAction: DecayWithSpin"<<std::endl;
 	  musrParameters::field_DecayWithSpin=true;
@@ -425,10 +438,12 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
 	  }
 	}
     //include missing bound-electron in decay by Gianluca
+    
     if (((processName=="Decay")||(processName=="DecayWithSpin")) && ((p_name == "Mu") || (p_name == "Mu2S"))) {
             
       G4Track* decay_track = aStep->GetTrack();
       G4double binding_energy = 13.539*CLHEP::eV;
+      //G4double binding_energy = 1500*CLHEP::eV;
       G4DynamicParticle* bound_electron = new G4DynamicParticle (G4Electron::Electron(), decay_track->GetDynamicParticle()->GetMomentumDirection(), binding_energy);
       bound_electron->SetProperTime(decay_track->GetDynamicParticle()->GetProperTime());
 
@@ -441,10 +456,12 @@ void musrSteppingAction::UserSteppingAction(const G4Step* aStep)  {
       }
     }
     
+    
     //included by Gianluca
     //better resolution for quenching --> set step limit smaller
     if ((p_name == "Mu2S")||(p_name=="Mu"))
     {
+        //std::cout << "setting limit to particle " << p_name << std::endl;
         G4PropagatorInField* propagMgr = G4TransportationManager::GetTransportationManager()->GetPropagatorInField();
         propagMgr->SetLargestAcceptableStep(0.1*CLHEP::mm);
     }

@@ -106,16 +106,18 @@ class musrRootOutput  {
 
 
 
-    void SetInitialMuonParameters(G4double x, G4double y, G4double z, G4double px, G4double py, G4double pz, 
+    void SetInitialMuonParameters(G4double x, G4double y, G4double z, G4double px, G4double py, G4double pz, G4double energy, G4double theta,
 				  G4double xpolaris, G4double ypolaris, G4double zpolaris, G4double particleTime) {
       muIniTime=particleTime/CLHEP::microsecond;
       muIniPosX=x;  muIniPosY=y;  muIniPosZ=z;
       muIniMomX=px; muIniMomY=py; muIniMomZ=pz;
+      muIniEner=energy;
+      muIniTheta = theta;
       muIniPolX=xpolaris; muIniPolY=ypolaris; muIniPolZ=zpolaris; 
     }
     void PrintInitialMuonParameters() {
       G4cout<<"musrRootOutput.hh: Initial muon parameters: x="<<muIniPosX<<", y="<<muIniPosY<<", z="<<muIniPosZ
-	    <<", px="<<muIniMomX << ", py="<<muIniMomY<<", pz="<<muIniMomZ<<G4endl;
+	    <<", px="<<muIniMomX << ", py="<<muIniMomY<<", pz="<<muIniMomZ<<", energy="<<muIniEner<<", theta="<<muIniTheta<<G4endl;
       G4cout<<"            polx="<<muIniPolX<<", poly="<<muIniPolY<<", polz="<<muIniPolZ<<G4endl;
       G4cout<<"            time at which muon was generated = "<<muIniTime<<G4endl;
       G4cout<<"            numberOfGeneratedEvents = "<<GeantParametersD[7]<<G4endl;
@@ -164,6 +166,8 @@ class musrRootOutput  {
     static G4bool store_muIniMomX;
     static G4bool store_muIniMomY;
     static G4bool store_muIniMomZ;
+    static G4bool store_muIniEner;
+    static G4bool store_muIniTheta;
     static G4bool store_muIniPolX;
     static G4bool store_muIniPolY;
     static G4bool store_muIniPolZ;
@@ -282,6 +286,7 @@ class musrRootOutput  {
     Double_t muIniTime;
     Double_t muIniPosX, muIniPosY, muIniPosZ;
     Double_t muIniMomX, muIniMomY, muIniMomZ;
+    Double_t muIniEner, muIniTheta;
     Double_t muIniPolX, muIniPolY, muIniPolZ;
     Int_t    muDecayDetID;
     Double_t muDecayPolX, muDecayPolY, muDecayPolZ;

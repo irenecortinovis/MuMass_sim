@@ -43,7 +43,7 @@ G4bool mumassLaserExcitation::CheckCondition(const G4Step& aStep)
   G4bool condition=false;
   p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name  
   std::string logVolName = aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName();
-  if(p_name == "Mu" && logVolName=="log_Laser")
+  if(p_name == "Mu" && logVolName=="log_saveLaser")
     {
       condition=true;
     }
@@ -86,12 +86,15 @@ void mumassLaserExcitation::GetDatas(const G4Step* aStep)
      if(p_name=="Mu")
 
        {
-	 if(rnd<mu2s_formation_prob) 
+     //mu2s_formation_prob *= 10000;
+     //std::cout << mu2s_formation_prob << std::endl;
+	 if(rnd<(mu2s_formation_prob)) 
 	   {
 	     particle = particleTable->FindParticle(p_new) ;
              DP = new G4DynamicParticle(particle, aStep->GetTrack()->GetDynamicParticle()->GetMomentumDirection(),
              aStep->GetTrack()->GetDynamicParticle()->GetKineticEnergy());
              cout << "Mu2S was formed"<< endl;
+             std::cout << mu2s_formation_prob << std::endl;
 	   }
 	 else 
 	   {

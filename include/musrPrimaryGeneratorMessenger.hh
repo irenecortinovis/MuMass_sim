@@ -77,6 +77,7 @@ class musrPrimaryGeneratorMessenger: public G4UImessenger
     G4UIcmdWithAString*        setMomHistoCmd;
     G4UIcmdWithAString*        setPosHistoCmd;
     G4UIcmdWithAString*        setMomANDPosHistoCmd;
+    G4UIcmdWithAString*        setMuoniumCmd;
         
 
 };

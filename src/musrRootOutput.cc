@@ -82,6 +82,8 @@ G4bool musrRootOutput::store_muIniPosZ = true;
 G4bool musrRootOutput::store_muIniMomX = true;
 G4bool musrRootOutput::store_muIniMomY = true;
 G4bool musrRootOutput::store_muIniMomZ = true;
+G4bool musrRootOutput::store_muIniEner = true;
+G4bool musrRootOutput::store_muIniTheta = true;
 G4bool musrRootOutput::store_muIniPolX = true;
 G4bool musrRootOutput::store_muIniPolY = true;
 G4bool musrRootOutput::store_muIniPolZ = true;
@@ -201,6 +203,8 @@ void musrRootOutput::BeginOfRunAction() {
   if (store_muIniMomX)    {rootTree->Branch("muIniMomX",&muIniMomX,"muIniMomX/D");}
   if (store_muIniMomY)    {rootTree->Branch("muIniMomY",&muIniMomY,"muIniMomY/D");}
   if (store_muIniMomZ)    {rootTree->Branch("muIniMomZ",&muIniMomZ,"muIniMomZ/D");}
+  if (store_muIniEner)    {rootTree->Branch("muIniEner",&muIniEner,"muIniEner/D");}
+  if (store_muIniTheta)    {rootTree->Branch("muIniTheta",&muIniTheta,"muIniTheta/D");}
   if (store_muIniPolX)    {rootTree->Branch("muIniPolX",&muIniPolX,"muIniPolX/D");}
   if (store_muIniPolY)    {rootTree->Branch("muIniPolY",&muIniPolY,"muIniPolY/D");}
   if (store_muIniPolZ)    {rootTree->Branch("muIniPolZ",&muIniPolZ,"muIniPolZ/D");}
@@ -515,6 +519,7 @@ void musrRootOutput::ClearAllRootVariables() {
   muIniTime=-1000;
   muIniPosX=-1000; muIniPosY=-1000; muIniPosZ=-1000;
   muIniMomX=-1000; muIniMomY=-1000; muIniMomZ=-1000;
+  muIniEner=-1000; muIniTheta=-1000;
   muIniPolX=-1000; muIniPolY=-1000; muIniPolZ=-1000;
   muDecayDetID=-1000;
   muDecayPolX=-1000; muDecayPolY=-1000; muDecayPolZ=-1000;
